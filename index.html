@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All-in-One Mobile Tetris</title>
+    <title>All-in-One Mobile Tetris (Fixed)</title>
     <style>
         /* ---------------- CSS 시작 ---------------- */
         body {
@@ -15,9 +15,9 @@
             font-family: 'Arial', sans-serif;
             background-color: #333;
             color: #fff;
-            user-select: none; /* 모바일에서 텍스트 선택 방지 */
-            -webkit-user-select: none; /* iOS Safari */
-            -ms-user-select: none; /* IE/Edge */
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
         }
 
         #game-container {
@@ -38,14 +38,13 @@
             width: 100%;
             border: 4px solid #fff;
             background-color: #000;
-            aspect-ratio: 10 / 20; /* 10:20 비율 유지 */
+            aspect-ratio: 10 / 20; 
         }
 
         .square {
-            /* 각 칸의 최소 높이 */
             min-height: 1.5vw; 
             box-sizing: border-box;
-            border: 1px solid rgba(255, 255, 255, 0.1); /* 그리드 라인 */
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .block {
@@ -77,7 +76,7 @@
         }
 
         #mobile-controls button {
-            padding: 15px 20px; /* 터치 영역 확보 */
+            padding: 15px 20px;
             font-size: 20px;
             font-weight: bold;
             border: none;
@@ -86,7 +85,7 @@
             color: white;
             cursor: pointer;
             transition: background-color 0.1s;
-            touch-action: manipulation; /* 모바일 지연 방지 */
+            touch-action: manipulation;
         }
 
         #mobile-controls button:active {
@@ -125,32 +124,23 @@
         let score = 0;
         let timerId;
         
-        // 7가지 테트로미노 모양 정의 (4x4 그리드 기준, 첫 번째 인덱스는 기본 회전)
-        // [모양, 색상 인덱스]
+        // 7가지 테트로미노 모양 정의
         const theTetrominoes = [
-            // I: cyan (0)
-            [[1, BOARD_WIDTH + 1, BOARD_WIDTH * 2 + 1, BOARD_WIDTH * 3 + 1], 0], 
-            // J: blue (1)
-            [[0, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH * 2 + 1], 1],         
-            // L: orange (2)
-            [[2, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH * 2 + 1], 2],         
-            // O: yellow (3) - 회전해도 모양 변화 없음
-            [[0, 1, BOARD_WIDTH, BOARD_WIDTH + 1], 3],                           
-            // S: lime (4)
-            [[1, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH * 2], 4],             
-            // T: purple (5)
-            [[1, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH + 2], 5],             
-            // Z: red (6)
-            [[0, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH * 2 + 2], 6]          
+            [[1, BOARD_WIDTH + 1, BOARD_WIDTH * 2 + 1, BOARD_WIDTH * 3 + 1], 0], // I
+            [[0, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH * 2 + 1], 1],         // J
+            [[2, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH * 2 + 1], 2],         // L
+            [[0, 1, BOARD_WIDTH, BOARD_WIDTH + 1], 3],                           // O
+            [[1, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH * 2], 4],             // S
+            [[1, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH + 2], 5],             // T
+            [[0, BOARD_WIDTH, BOARD_WIDTH + 1, BOARD_WIDTH * 2 + 2], 6]          // Z
         ];
         
-        // 현재 블록 및 위치
-        let currentRotation = 0; // 회전 상태 (0~3)
+        let currentRotation = 0;
         let random = Math.floor(Math.random() * theTetrominoes.length);
         let currentPieceData = theTetrominoes[random];
-        let current = currentPieceData[0]; // 현재 블록의 좌표
+        let current = currentPieceData[0];
         let currentColor = currentPieceData[1];
-        let currentPosition = 4; // 시작 위치 (가운데 상단)
+        let currentPosition = 4;
 
         // 1. 게임 보드 생성 (200개의 div)
         function createBoard() {
@@ -160,10 +150,10 @@
                 gameBoard.appendChild(square);
                 squares.push(square);
             }
-            // 바닥 충돌 감지를 위해 맨 아래 줄에 'taken' 마커 추가
+            // 🛑 수정된 부분: 바닥 충돌 감지용 더미 칸을 squares 배열에만 추가 (DOM에 추가하지 않음)
             for (let i = 0; i < BOARD_WIDTH; i++) {
                 const dummySquare = document.createElement('div');
-                dummySquare.classList.add('square', 'taken');
+                dummySquare.classList.add('taken'); 
                 squares.push(dummySquare);
             }
         }
@@ -171,14 +161,19 @@
         // 2. 블록 그리기
         function draw() {
             current.forEach(index => {
-                squares[currentPosition + index].classList.add('block', `color-${currentColor}`);
+                // 안전성 확인: 인덱스가 배열 범위를 벗어나지 않도록
+                if (squares[currentPosition + index]) { 
+                    squares[currentPosition + index].classList.add('block', `color-${currentColor}`);
+                }
             });
         }
         
         // 3. 블록 지우기
         function undraw() {
             current.forEach(index => {
-                squares[currentPosition + index].classList.remove('block', `color-${currentColor}`);
+                if (squares[currentPosition + index]) {
+                    squares[currentPosition + index].classList.remove('block', `color-${currentColor}`);
+                }
             });
         }
 
@@ -197,15 +192,14 @@
         // 바닥 또는 다른 블록과 충돌 감지
         function isAtBottom() {
             // 현재 위치에서 다음 칸(BOARD_WIDTH 아래)에 'taken' 클래스가 있는지 확인
-            return current.some(index => squares[currentPosition + index + BOARD_WIDTH].classList.contains('taken'));
+            // squares[currentPosition + index + BOARD_WIDTH]가 바닥 더미 칸을 가리키면 충돌
+            return current.some(index => squares[currentPosition + index + BOARD_WIDTH]?.classList.contains('taken'));
         }
 
         // 5. 블록 고정 (Freeze)
         function freeze() {
-            // 현재 블록의 모든 조각을 'taken'으로 표시하여 고정
             current.forEach(index => squares[currentPosition + index].classList.add('taken'));
             
-            // 줄 제거 확인
             addScore();
             
             // 새 블록 생성
@@ -227,7 +221,6 @@
         function move(direction) {
             undraw();
             
-            // 경계선 계산
             const isAtLeftEdge = current.some(index => (currentPosition + index) % BOARD_WIDTH === 0);
             const isAtRightEdge = current.some(index => (currentPosition + index) % BOARD_WIDTH === BOARD_WIDTH - 1);
             
@@ -240,62 +233,45 @@
             }
 
             // 새로운 위치에 'taken' 블록이 있는지 확인 (충돌 방지)
-            if (!current.some(index => squares[newPosition + index].classList.contains('taken'))) {
+            if (!current.some(index => squares[newPosition + index]?.classList.contains('taken'))) {
                 currentPosition = newPosition;
             }
             
             draw();
         }
 
-        // 7. 회전 (Rotate) - **단순화된 예시 코드**
-        // 이 코드는 실제 테트리스의 복잡한 회전(벽차기 등) 로직을 포함하지 않습니다.
+        // 7. 회전 (Rotate) - 단순화된 코드 (기능적으로 완벽하지 않음)
         function rotate() {
-            // 회전 로직은 복잡하여 이 코드에서는 생략하지만, 
-            // 실제 구현 시에는 current 배열의 값을 90도 회전한 새로운 배열로 바꿔야 합니다.
-            // 예를 들어, T 블록은 4가지 형태의 배열을 미리 정의해 놓고 순환합니다.
-            
-            // 임시로 T 블록만 아주 간단하게 흉내내봅니다 (실제 회전 로직 아님)
-            if (currentColor === 5) { // T 블록 (5)
-                undraw();
-                currentRotation = (currentRotation + 1) % 4;
-                
-                // 실제로는 회전된 좌표를 계산해야 함
-                // 여기서는 복잡성 때문에 단순화된 기본 좌표만 유지
-                // current = theTetrominoes[5][currentRotation] // 실제 구현 코드
-                draw();
-            } else {
-                 // 다른 블록들은 회전 로직을 추가해야 함
-            }
+            // 실제 구현 시에는 회전 배열과 충돌 검사 로직이 필요합니다.
+            undraw();
+            currentRotation = (currentRotation + 1) % 4;
             draw();
         }
 
         // 8. 줄 제거 및 점수 추가
         function addScore() {
-            // 게임 보드의 실제 높이(20줄)까지만 순회
             for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i += BOARD_WIDTH) {
                 const row = [];
                 for (let j = 0; j < BOARD_WIDTH; j++) {
                     row.push(i + j);
                 }
                 
-                // 줄이 꽉 찼는지 확인
                 if (row.every(index => squares[index].classList.contains('taken'))) {
                     score += 10;
                     scoreDisplay.innerHTML = score;
                     
-                    // 꽉 찬 줄 제거
+                    // 꽉 찬 줄 제거 (시각적 + 데이터)
                     row.forEach(index => {
+                        // color 클래스 추출 시 오류 방지를 위해 옵셔널 체이닝 사용
                         squares[index].classList.remove('taken', 'block', `color-${squares[index].className.match(/color-\d/)?.[0]?.slice(-1) || ''}`);
                     });
                     
                     // 윗줄들을 아래로 이동
-                    // squares 배열에서 제거된 줄을 잘라내고 (splice)
                     const squaresRemoved = squares.splice(i, BOARD_WIDTH);
-                    // 잘라낸 줄을 배열 맨 앞으로 합칩니다. (새로운 빈 줄 효과)
                     squares = squaresRemoved.concat(squares);
                     
-                    // HTML DOM을 새로운 squares 배열 순서대로 다시 그립니다.
-                    squares.forEach(cell => gameBoard.appendChild(cell));
+                    // HTML DOM 업데이트
+                    squares.slice(0, BOARD_WIDTH * BOARD_HEIGHT).forEach(cell => gameBoard.appendChild(cell));
                 }
             }
         }
@@ -308,8 +284,7 @@
             else if (e.key === 'ArrowUp') rotate();
         });
 
-        // 10. 이벤트 리스너 (모바일 터치) - touchstart 사용
-        // e.preventDefault()로 스크롤이나 확대/축소 등 브라우저 기본 동작을 막아줍니다.
+        // 10. 이벤트 리스너 (모바일 터치)
         document.getElementById('left-btn').addEventListener('touchstart', (e) => { e.preventDefault(); move('left'); });
         document.getElementById('right-btn').addEventListener('touchstart', (e) => { e.preventDefault(); move('right'); });
         document.getElementById('rotate-btn').addEventListener('touchstart', (e) => { e.preventDefault(); rotate(); });
@@ -317,7 +292,7 @@
 
         // 11. 게임 시작
         createBoard();
-        // 1초마다 moveDown 실행
+        // 1초마다 moveDown 실행 (블록 하강)
         timerId = setInterval(moveDown, 1000); 
         /* ---------------- JavaScript 끝 ---------------- */
     </script>
