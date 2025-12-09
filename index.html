@@ -255,4 +255,71 @@
             // 예를 들어, T 블록은 4가지 형태의 배열을 미리 정의해 놓고 순환합니다.
             
             // 임시로 T 블록만 아주 간단하게 흉내내봅니다 (실제 회전 로직 아님)
-            if (
+            if (currentColor === 5) { // T 블록 (5)
+                undraw();
+                currentRotation = (currentRotation + 1) % 4;
+                
+                // 실제로는 회전된 좌표를 계산해야 함
+                // 여기서는 복잡성 때문에 단순화된 기본 좌표만 유지
+                // current = theTetrominoes[5][currentRotation] // 실제 구현 코드
+                draw();
+            } else {
+                 // 다른 블록들은 회전 로직을 추가해야 함
+            }
+            draw();
+        }
+
+        // 8. 줄 제거 및 점수 추가
+        function addScore() {
+            // 게임 보드의 실제 높이(20줄)까지만 순회
+            for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i += BOARD_WIDTH) {
+                const row = [];
+                for (let j = 0; j < BOARD_WIDTH; j++) {
+                    row.push(i + j);
+                }
+                
+                // 줄이 꽉 찼는지 확인
+                if (row.every(index => squares[index].classList.contains('taken'))) {
+                    score += 10;
+                    scoreDisplay.innerHTML = score;
+                    
+                    // 꽉 찬 줄 제거
+                    row.forEach(index => {
+                        squares[index].classList.remove('taken', 'block', `color-${squares[index].className.match(/color-\d/)?.[0]?.slice(-1) || ''}`);
+                    });
+                    
+                    // 윗줄들을 아래로 이동
+                    // squares 배열에서 제거된 줄을 잘라내고 (splice)
+                    const squaresRemoved = squares.splice(i, BOARD_WIDTH);
+                    // 잘라낸 줄을 배열 맨 앞으로 합칩니다. (새로운 빈 줄 효과)
+                    squares = squaresRemoved.concat(squares);
+                    
+                    // HTML DOM을 새로운 squares 배열 순서대로 다시 그립니다.
+                    squares.forEach(cell => gameBoard.appendChild(cell));
+                }
+            }
+        }
+
+        // 9. 이벤트 리스너 (PC 키보드)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') move('left');
+            else if (e.key === 'ArrowRight') move('right');
+            else if (e.key === 'ArrowDown') moveDown();
+            else if (e.key === 'ArrowUp') rotate();
+        });
+
+        // 10. 이벤트 리스너 (모바일 터치) - touchstart 사용
+        // e.preventDefault()로 스크롤이나 확대/축소 등 브라우저 기본 동작을 막아줍니다.
+        document.getElementById('left-btn').addEventListener('touchstart', (e) => { e.preventDefault(); move('left'); });
+        document.getElementById('right-btn').addEventListener('touchstart', (e) => { e.preventDefault(); move('right'); });
+        document.getElementById('rotate-btn').addEventListener('touchstart', (e) => { e.preventDefault(); rotate(); });
+        document.getElementById('down-btn').addEventListener('touchstart', (e) => { e.preventDefault(); moveDown(); });
+
+        // 11. 게임 시작
+        createBoard();
+        // 1초마다 moveDown 실행
+        timerId = setInterval(moveDown, 1000); 
+        /* ---------------- JavaScript 끝 ---------------- */
+    </script>
+</body>
+</html>
